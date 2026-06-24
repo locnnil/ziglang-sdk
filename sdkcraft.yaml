@@ -1,0 +1,84 @@
+name: ziglang
+version: "0.17.0-dev.902+7255f3e72"
+title: Zig SDK
+summary: The Zig programming language
+description: |
+  This SDK provides the Zig toolchain — the compiler, build system, and bundled
+  standard library — for systems programming and C/C++ cross-compilation. The
+  Zig global build cache is persisted on the host to speed up compilation across
+  workshop updates.
+
+  This branch tracks Zig's `master` (nightly) builds and is published to the
+  `latest/edge` channel. The `latest/beta` channel tracks the most recent minor
+  Zig release.
+
+  ## Key components
+
+  - `zig`: The Zig compiler and toolchain, including the build system
+    (`zig build`), the test runner (`zig test`), and the bundled C/C++ compiler
+    (`zig cc` / `zig c++`). The version is determined by the SDK release, not the
+    base image.
+  - Global cache: Configured to persist at `~/.cache/zig` via a bind mount to the
+    host, so compiled artifacts survive workshop updates.
+
+  The SDK installs the official prebuilt Zig distribution from ziglang.org. Zig
+  bundles everything required for cross-compilation, so no separate C/C++
+  toolchain is needed.
+
+  ## Setup actions
+
+  On launch, the SDK:
+
+  - Adds the `zig` binary to `PATH` system-wide via `/etc/profile.d/zig.sh`.
+  - Points `ZIG_GLOBAL_CACHE_DIR` at the persistent mount at `~/.cache/zig`.
+license: MIT
+build-base: ubuntu@24.04
+platforms:
+  amd64:
+    build-on: [amd64]
+    build-for: [amd64]
+  arm64:
+    build-on: [amd64]
+    build-for: [arm64]
+  riscv64:
+    build-on: [amd64]
+    build-for: [riscv64]
+
+plugs:
+  global-cache:
+    interface: mount
+    workshop-target: /home/workshop/.cache/zig
+
+parts:
+  zig:
+    plugin: nil
+    build-packages:
+      - curl
+      - xz-utils
+    override-pull: |
+      VERSION="$CRAFT_PROJECT_VERSION"
+      case "$CRAFT_ARCH_BUILD_FOR" in
+        amd64)   ZIG_ARCH=x86_64 ;;
+        arm64)   ZIG_ARCH=aarch64 ;;
+        riscv64) ZIG_ARCH=riscv64 ;;
+        *)
+          echo "Unsupported architecture: $CRAFT_ARCH_BUILD_FOR" >&2
+          exit 1
+          ;;
+      esac
+      TARBALL="zig-${ZIG_ARCH}-linux-${VERSION}.tar.xz"
+      # Stable releases live under /download/<version>/; nightly (master, e.g.
+      # 0.17.0-dev.NNN+hash) builds live under /builds/.
+      case "$VERSION" in
+        *-dev*) URL="https://ziglang.org/builds/${TARBALL}" ;;
+        *)      URL="https://ziglang.org/download/${VERSION}/${TARBALL}" ;;
+      esac
+      echo "Fetching ${URL}"
+      curl -fLO "$URL"
+      mkdir -p "$CRAFT_PART_INSTALL/bin"
+      tar -xf "$TARBALL" --strip-components=1 -C "$CRAFT_PART_INSTALL"
+      # The tarball ships `zig` next to `lib/`; move the binary into bin/ so it is
+      # discoverable on PATH while Zig still resolves its stdlib via ../lib.
+      mv "$CRAFT_PART_INSTALL/zig" "$CRAFT_PART_INSTALL/bin/zig"
+      rm -rf "$CRAFT_PART_INSTALL/doc" "$CRAFT_PART_INSTALL/README.md"
+      rm -f "$TARBALL"

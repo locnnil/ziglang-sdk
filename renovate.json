@@ -1,0 +1,55 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "enabledManagers": [
+    "custom.regex"
+  ],
+  "customDatasources": {
+    "zig-master": {
+      "defaultRegistryUrlTemplate": "https://ziglang.org/download/index.json",
+      "format": "json",
+      "transformTemplates": [
+        "{ \"releases\": [ { \"version\": master.version } ] }"
+      ]
+    }
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^sdkcraft\\.yaml$/"],
+      "matchStrings": [
+        "version:\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+-dev\\.[0-9]+\\+[0-9a-f]+)\""
+      ],
+      "depNameTemplate": "zig-master",
+      "datasourceTemplate": "custom.zig-master",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^sdkcraft\\.yaml$/"],
+      "matchStrings": [
+        "version:\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""
+      ],
+      "depNameTemplate": "ziglang/zig",
+      "datasourceTemplate": "github-tags",
+      "versioningTemplate": "semver"
+    }
+  ],
+  "baseBranchPatterns": [
+    "main",
+    "beta"
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": ["zig-master"],
+      "matchBaseBranches": ["main"],
+      "ignoreUnstable": false
+    },
+    {
+      "matchPackageNames": ["ziglang/zig"],
+      "matchBaseBranches": ["beta"]
+    }
+  ]
+}

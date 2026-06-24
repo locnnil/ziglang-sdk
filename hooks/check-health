@@ -1,0 +1,8 @@
+#!/usr/bin/bash
+# Report SDK health by checking that the Zig compiler runs and resolves its
+# bundled standard library.
+if sudo -iu workshop -- zig version; then
+  workshopctl set-health okay
+else
+  workshopctl set-health --code=zig-version-failed error "Zig version check failed"
+fi

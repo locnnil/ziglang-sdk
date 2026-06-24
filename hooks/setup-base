@@ -1,0 +1,7 @@
+#!/usr/bin/bash
+# Runs as root on launch and refresh. Make the Zig toolchain available
+# system-wide and point its global cache at the persistent mount.
+cat <<EOF >/etc/profile.d/zig.sh
+export PATH="$SDK/bin:\$PATH"
+export ZIG_GLOBAL_CACHE_DIR="/home/workshop/.cache/zig"
+EOF
