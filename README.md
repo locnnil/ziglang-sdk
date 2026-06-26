@@ -140,7 +140,7 @@ are welcome!
 
 ## License and copyright
 
-Copyright 2026 Canonical Ltd.
+Copyright 2026 Lincoln Wallace
 
 This program is free software: you can redistribute it and/or modify it under the
 terms of the
@@ -152,4 +152,4 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 
 Zig is licensed under the
-[MIT License](https://github.com/ziglang/zig/blob/master/LICENSE).
+[MIT License](https://codeberg.org/ziglang/zig/src/branch/master/LICENSE).
