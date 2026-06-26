@@ -1,5 +1,5 @@
 name: zig
-version: "0.17.0-dev.902+7255f3e72"
+version: "0.16.0"
 title: Zig SDK
 summary: The Zig programming language
 description: |
