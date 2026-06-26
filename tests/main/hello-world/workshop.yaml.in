@@ -1,0 +1,4 @@
+name: test-ziglang
+base: ${BASE}
+sdks:
+  - name: try-ziglang

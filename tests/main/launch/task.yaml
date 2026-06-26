@@ -1,0 +1,26 @@
+summary: Launch a workshop with the Zig SDK and verify setup
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  # The Zig compiler runs and reports its version (e.g. 0.17.0-dev.902+...).
+  workshop exec -- zig version | MATCH "^[0-9]+\.[0-9]+"
+
+  # setup-base puts the bundled zig on $PATH system-wide via
+  # /etc/profile.d/zig.sh, and `workshop exec` uses a login shell.
+  workshop exec -- which zig | MATCH "/zig$"
+
+  # setup-base points the global cache at the persistent `global-cache`
+  # mount, both via the environment and as resolved by the toolchain.
+  workshop exec -- printenv ZIG_GLOBAL_CACHE_DIR | MATCH "^/home/workshop/.cache/zig$"
+  workshop exec -- zig env | MATCH "/home/workshop/.cache/zig"
+
+debug: |
+  workshop exec -- printenv PATH || true
+  workshop exec -- ls -l /etc/profile.d/zig.sh || true
+  workshop exec -- zig env || true

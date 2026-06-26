@@ -1,0 +1,35 @@
+summary: Scaffold a project with `zig init`, then build, test, and run it
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  # `zig init` scaffolds a runnable project (build system, sources, and
+  # manifest) in an empty directory. Using the toolchain's own template keeps
+  # the test in sync with whatever Zig version the SDK ships.
+  workshop exec -- mkdir -p /home/workshop/initapp
+  workshop exec -w /home/workshop/initapp -- zig init
+
+  # The expected project files were created.
+  workshop exec -- test -f /home/workshop/initapp/build.zig
+  workshop exec -- test -f /home/workshop/initapp/build.zig.zon
+  workshop exec -- test -f /home/workshop/initapp/src/main.zig
+
+  # The generated project builds and its bundled tests pass.
+  workshop exec -w /home/workshop/initapp -- zig build
+  workshop exec -w /home/workshop/initapp -- zig build test
+
+  # ...and it runs correctly via the build system's `run` step.
+  workshop exec -w /home/workshop/initapp -- zig build run 2>&1 | MATCH "All your codebase are belong to us"
+
+  # `zig build` emitted the executable under zig-out/.
+  workshop exec -- ls -A /home/workshop/initapp/zig-out/bin | MATCH "."
+
+debug: |
+  workshop exec -- ls -la /home/workshop/initapp || true
+  workshop exec -- cat /home/workshop/initapp/src/main.zig || true
+  workshop exec -- zig env || true

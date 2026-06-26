@@ -1,0 +1,40 @@
+summary: Build and run a Zig "hello world", and cross-compile it
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  # A minimal, hand-written hello-world program. `std.debug.print` writes to
+  # stderr and is stable across Zig's frequent nightly std API changes, which
+  # keeps this test robust on the latest/edge channel.
+  workshop exec -- mkdir -p /home/workshop/hello
+  workshop exec -- tee /home/workshop/hello/hello.zig >/dev/null <<'ZIG'
+  const std = @import("std");
+  pub fn main() !void {
+      std.debug.print("Hello, world!\n", .{});
+  }
+  ZIG
+
+  # Build a native executable and confirm it lands on disk and is runnable.
+  workshop exec -w /home/workshop/hello -- zig build-exe hello.zig
+  workshop exec -- test -x /home/workshop/hello/hello
+
+  # Run it — the program must greet the planet (std.debug.print -> stderr).
+  workshop exec -- /home/workshop/hello/hello 2>&1 | MATCH "Hello, world!"
+
+  # Cross-compilation is Zig's headline feature: build the same program for
+  # aarch64 with no extra toolchain and confirm an artifact is produced.
+  workshop exec -w /home/workshop/hello -- zig build-exe hello.zig -target aarch64-linux -femit-bin=hello-arm64
+  workshop exec -- test -s /home/workshop/hello/hello-arm64
+
+  # The compile populated the persistent global cache mount.
+  workshop exec -- ls -A /home/workshop/.cache/zig | MATCH "."
+
+debug: |
+  workshop exec -- cat /home/workshop/hello/hello.zig || true
+  workshop exec -- ls -la /home/workshop/hello || true
+  workshop exec -- zig env || true
