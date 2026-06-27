@@ -133,7 +133,6 @@ This SDK doesn't define any slots.
 All contributions, including code, documentation updates, and issue reports,
 are welcome!
 
-- See `CONTRIBUTING.md` for guidelines.
 - Open issues or pull requests on the official repository.
 
 ---
