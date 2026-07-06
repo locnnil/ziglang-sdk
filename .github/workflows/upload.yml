@@ -24,5 +24,6 @@ jobs:
       platform-flag: "--build-for"
       track: "latest"
       risk: ${{ github.ref_name == 'main' && 'edge' || 'beta' }}
+      runs-on: ubuntu-latest
     secrets:
       SDKCRAFT_STORE_CREDENTIALS: ${{ secrets.SDKCRAFT_STORE_CREDENTIALS_PROD }}
