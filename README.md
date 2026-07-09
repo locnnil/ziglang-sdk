@@ -20,8 +20,8 @@ A minimal workshop:
 name: zig-app
 base: ubuntu@24.04
 sdks:
-  - name: ziglang
-    channel: latest/beta
+  - name: zig
+    channel: latest/stable
 
 actions:
   build: |
